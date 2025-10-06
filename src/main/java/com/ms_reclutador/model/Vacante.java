@@ -2,16 +2,17 @@ package com.ms_reclutador.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
-@Table(name = "vacantes")
+@Table(name = "vacantes", schema = "reclutador")
 public class Vacante {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String titulo;
 
     @Column(nullable = false, length = 1000)
@@ -50,6 +51,31 @@ public class Vacante {
     @Column
     private String beneficios;
 
+    @Column(nullable = false)
+    private String empresa;
+
+    // Campos de horario dinámico
+    @Column
+    private LocalTime horaInicio; // Ejemplo: 09:00:00
+
+    @Column
+    private LocalTime horaFin; // Ejemplo: 18:00:00
+
+    @Column
+    private String diasLaborales; // Ejemplo: "Lunes,Martes,Miércoles,Jueves,Viernes" o "L-V"
+
+    @Column
+    private Integer horasPorSemana; // Total de horas semanales
+
+    @Column
+    private String modalidad; // "Presencial", "Remoto", "Híbrido"
+
+    @Column
+    private String turno; // "Matutino", "Vespertino", "Nocturno", "Mixto", "Flexible"
+
+    @Column
+    private Boolean horarioFlexible = false; // Si tiene flexibilidad de horario
+
     // Constructores
     public Vacante() {
         this.fechaCreacion = LocalDateTime.now();
@@ -57,7 +83,10 @@ public class Vacante {
 
     public Vacante(String titulo, String descripcion, String departamento, Double salario,
                    String ubicacion, String tipoContrato, Integer solicitudesPermitidas,
-                   LocalDateTime fechaExpiracion, String requisitos, String beneficios) {
+                   LocalDateTime fechaExpiracion, String requisitos, String beneficios,
+                   String empresa, LocalTime horaInicio, LocalTime horaFin,
+                   String diasLaborales, Integer horasPorSemana, String modalidad,
+                   String turno, Boolean horarioFlexible) {
         this();
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -69,8 +98,15 @@ public class Vacante {
         this.fechaExpiracion = fechaExpiracion;
         this.requisitos = requisitos;
         this.beneficios = beneficios;
+        this.empresa = empresa;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+        this.diasLaborales = diasLaborales;
+        this.horasPorSemana = horasPorSemana;
+        this.modalidad = modalidad;
+        this.turno = turno;
+        this.horarioFlexible = horarioFlexible;
     }
-
     // Getters y Setters
     public Long getId() {
         return id;
@@ -184,6 +220,70 @@ public class Vacante {
         this.beneficios = beneficios;
     }
 
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
+
+    public LocalTime getHoraInicio() {
+        return horaInicio;
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+
+    public LocalTime getHoraFin() {
+        return horaFin;
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+        this.horaFin = horaFin;
+    }
+
+    public String getDiasLaborales() {
+        return diasLaborales;
+    }
+
+    public void setDiasLaborales(String diasLaborales) {
+        this.diasLaborales = diasLaborales;
+    }
+
+    public Integer getHorasPorSemana() {
+        return horasPorSemana;
+    }
+
+    public void setHorasPorSemana(Integer horasPorSemana) {
+        this.horasPorSemana = horasPorSemana;
+    }
+
+    public String getModalidad() {
+        return modalidad;
+    }
+
+    public void setModalidad(String modalidad) {
+        this.modalidad = modalidad;
+    }
+
+    public String getTurno() {
+        return turno;
+    }
+
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
+
+    public Boolean getHorarioFlexible() {
+        return horarioFlexible;
+    }
+
+    public void setHorarioFlexible(Boolean horarioFlexible) {
+        this.horarioFlexible = horarioFlexible;
+    }
+
     // Métodos de negocio
     public boolean isDisponible() {
         return "ACTIVA".equals(estado) &&
@@ -196,5 +296,22 @@ public class Vacante {
         if (this.solicitudesRecibidas >= this.solicitudesPermitidas) {
             this.estado = "CERRADA";
         }
+    }
+
+    // Metodo helper para obtener el horario formateado
+    public String getHorarioFormateado() {
+        if (horarioFlexible != null && horarioFlexible) {
+            return "Horario Flexible";
+        }
+        if (horaInicio != null && horaFin != null) {
+            return horaInicio + " - " + horaFin;
+        }
+        return "Por definir";
+    }
+
+    // Metodo helper para verificar si trabaja un día específico
+    public boolean trabajaDia(String dia) {
+        if (diasLaborales == null) return false;
+        return diasLaborales.toLowerCase().contains(dia.toLowerCase());
     }
 }
