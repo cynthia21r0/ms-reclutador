@@ -1,126 +1,74 @@
-package com.ms_reclutador.model;
+package com.ms_reclutador.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "vacantes")
-@Schema(description = "Entidad que representa una vacante laboral")
-public class Vacante {
+@Schema(description = "DTO para la creación y actualización de vacantes")
+public class VacanteRequestDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "ID único de la vacante", example = "1")
-    private Long id;
-
-    @Column(nullable = false)
     @Schema(description = "Título de la vacante", example = "Desarrollador Backend Java Senior", requiredMode = Schema.RequiredMode.REQUIRED)
     private String titulo;
 
-    @Column(nullable = false, length = 1000)
     @Schema(description = "Descripción detallada de la vacante", example = "Estamos buscando un desarrollador backend con experiencia en Java Spring Boot...", requiredMode = Schema.RequiredMode.REQUIRED)
     private String descripcion;
 
-    @Column(nullable = false)
     @Schema(description = "Salario ofrecido", example = "45000.00", requiredMode = Schema.RequiredMode.REQUIRED)
     private Double salario;
 
-    @Column(nullable = false)
     @Schema(description = "Ubicación del trabajo", example = "Ciudad de México", requiredMode = Schema.RequiredMode.REQUIRED)
     private String ubicacion;
 
-    @Column(nullable = false)
     @Schema(description = "Tipo de contrato", example = "Tiempo completo", requiredMode = Schema.RequiredMode.REQUIRED)
     private String tipoContrato;
 
-    @Column(nullable = false)
     @Schema(description = "Número máximo de solicitudes permitidas", example = "50", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer solicitudesPermitidas;
 
-    @Column(nullable = false)
     @Schema(description = "Estado de la vacante", example = "ACTIVA", allowableValues = {"ACTIVA", "INACTIVA", "CANCELADA", "CERRADA"})
-    private String estado = "ACTIVA";
+    private String estado;
 
-    @Column(nullable = false)
-    @Schema(description = "Fecha de creación de la vacante", example = "2024-01-15T10:30:00")
-    private LocalDateTime fechaCreacion;
-
-    @Column(nullable = false)
-    @Schema(description = "Fecha de expiración de la vacante", example = "2024-12-31T23:59:59", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Fecha de expiración de la vacante", example = "2024-12-31T23:59:59")
     private LocalDateTime fechaExpiracion;
 
-    @Column(length = 1000)
     @Schema(description = "Beneficios ofrecidos", example = "Seguro médico, vales de despensa, fondo de ahorro")
     private String beneficios;
 
-    @Column(nullable = false, length = 200)
     @Schema(description = "Nombre de la empresa", example = "Tech Solutions SA de CV", requiredMode = Schema.RequiredMode.REQUIRED)
     private String empresa;
 
-    @Column
     @Schema(description = "Hora de inicio de la jornada", example = "09:00:00")
     private LocalTime horaInicio;
 
-    @Column
     @Schema(description = "Hora de fin de la jornada", example = "18:00:00")
     private LocalTime horaFin;
 
-    @Column(length = 100)
     @Schema(description = "Días laborales", example = "Lunes a Viernes")
     private String diasLaborales;
 
-    @Column
     @Schema(description = "Horas por semana", example = "40")
     private Integer horasPorSemana;
 
-    @Column(length = 50)
     @Schema(description = "Turno de trabajo", example = "Matutino", allowableValues = {"Matutino", "Vespertino", "Nocturno", "Mixto", "Flexible"})
     private String turno;
 
-    @Column(nullable = false)
     @Schema(description = "Indica si el horario es flexible", example = "true")
-    private Boolean horarioFlexible = false;
+    private Boolean horarioFlexible;
 
-    // 🔹 Relaciones
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "area_id", nullable = false)
-    @JsonIgnore
-    @Schema(description = "Área de la vacante")
-    private Area area;
+    @Schema(description = "ID del área", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long areaId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "modalidad_id", nullable = false)
-    @JsonIgnore
-    @Schema(description = "Modalidad de trabajo")
-    private Modalidad modalidad;
+    @Schema(description = "ID de la modalidad", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long modalidadId;
 
-    @ManyToMany
-    @JoinTable(
-            name = "vacantes_habilidades",
-            joinColumns = @JoinColumn(name = "vacante_id"),
-            inverseJoinColumns = @JoinColumn(name = "habilidad_id")
-    )
-    @JsonIgnore
-    @Schema(description = "Conjunto de habilidades requeridas")
-    private Set<Habilidades> habilidades = new HashSet<>();
+    @Schema(description = "IDs de las habilidades requeridas", example = "[1, 2, 3]")
+    private Set<Long> habilidadesIds;
 
-    @ManyToMany
-    @JoinTable(
-            name = "vacantes_idiomas",
-            joinColumns = @JoinColumn(name = "vacante_id"),
-            inverseJoinColumns = @JoinColumn(name = "idioma_id")
-    )
-    @JsonIgnore
-    @Schema(description = "Conjunto de idiomas requeridos")
-    private Set<Idiomas> idiomas = new HashSet<>();
+    @Schema(description = "IDs de los idiomas requeridos", example = "[1, 2]")
+    private Set<Long> idiomasIds;
 
-    // 🔹 Getters y Setters (mantener los mismos)
-    public Long getId() { return id; }
+    // Getters y Setters (mantener los mismos)
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
     public String getDescripcion() { return descripcion; }
@@ -135,8 +83,6 @@ public class Vacante {
     public void setSolicitudesPermitidas(Integer solicitudesPermitidas) { this.solicitudesPermitidas = solicitudesPermitidas; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
     public LocalDateTime getFechaExpiracion() { return fechaExpiracion; }
     public void setFechaExpiracion(LocalDateTime fechaExpiracion) { this.fechaExpiracion = fechaExpiracion; }
     public String getBeneficios() { return beneficios; }
@@ -155,12 +101,12 @@ public class Vacante {
     public void setTurno(String turno) { this.turno = turno; }
     public Boolean getHorarioFlexible() { return horarioFlexible; }
     public void setHorarioFlexible(Boolean horarioFlexible) { this.horarioFlexible = horarioFlexible; }
-    public Area getArea() { return area; }
-    public void setArea(Area area) { this.area = area; }
-    public Modalidad getModalidad() { return modalidad; }
-    public void setModalidad(Modalidad modalidad) { this.modalidad = modalidad; }
-    public Set<Habilidades> getHabilidades() { return habilidades; }
-    public void setHabilidades(Set<Habilidades> habilidades) { this.habilidades = habilidades; }
-    public Set<Idiomas> getIdiomas() { return idiomas; }
-    public void setIdiomas(Set<Idiomas> idiomas) { this.idiomas = idiomas; }
+    public Long getAreaId() { return areaId; }
+    public void setAreaId(Long areaId) { this.areaId = areaId; }
+    public Long getModalidadId() { return modalidadId; }
+    public void setModalidadId(Long modalidadId) { this.modalidadId = modalidadId; }
+    public Set<Long> getHabilidadesIds() { return habilidadesIds; }
+    public void setHabilidadesIds(Set<Long> habilidadesIds) { this.habilidadesIds = habilidadesIds; }
+    public Set<Long> getIdiomasIds() { return idiomasIds; }
+    public void setIdiomasIds(Set<Long> idiomasIds) { this.idiomasIds = idiomasIds; }
 }
