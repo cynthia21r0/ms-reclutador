@@ -1,6 +1,7 @@
 package com.ms_reclutador.controller;
 
 import com.ms_reclutador.dto.VacanteRequestDTO;
+import com.ms_reclutador.dto.VacanteResponseDTO;
 import com.ms_reclutador.model.Vacante;
 import com.ms_reclutador.service.VacanteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -287,6 +288,55 @@ public class VacanteController {
             response.put("success", false);
             response.put("message", "Error al obtener habilidades: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    // Agregar estos métodos al VacanteController existente
+
+    @Operation(summary = "Obtener vacante completa por ID", description = "Retorna una vacante específica con todas sus relaciones")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vacante encontrada"),
+            @ApiResponse(responseCode = "404", description = "Vacante no encontrada")
+    })
+    @GetMapping("/{id}/completa")
+    public ResponseEntity<?> obtenerVacanteCompletaPorId(
+            @Parameter(description = "ID de la vacante", example = "1", required = true)
+            @PathVariable Long id) {
+        try {
+            VacanteResponseDTO vacante = vacanteService.obtenerVacanteCompletaPorId(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", vacante);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al obtener vacante: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    @Operation(summary = "Obtener todas las vacantes completas", description = "Retorna todas las vacantes con sus relaciones básicas")
+    @ApiResponse(responseCode = "200", description = "Lista de vacantes obtenida exitosamente")
+    @GetMapping("/completas")
+    public ResponseEntity<?> obtenerTodasLasVacantesCompletas() {
+        try {
+            List<VacanteResponseDTO> vacantes = vacanteService.obtenerTodasLasVacantesCompletas();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", vacantes);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al obtener vacantes: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }

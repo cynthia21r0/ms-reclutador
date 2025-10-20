@@ -1,5 +1,6 @@
 package com.ms_reclutador.service;
 
+import com.ms_reclutador.dto.VacanteResponseDTO;
 import com.ms_reclutador.model.*;
 import com.ms_reclutador.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -177,4 +178,201 @@ public class VacanteService {
     public List<Habilidades> obtenerHabilidadesPorArea(Long areaId) {
         return habilidadesRepository.findByAreaId(areaId);
     }
-}
+    // Obtener vacante completa por ID
+    @Transactional(readOnly = true)
+    public VacanteResponseDTO obtenerVacanteCompletaPorId(Long id) {
+        List<Object[]> results = vacanteRepository.findVacanteCompletaById(id);
+
+        if (results.isEmpty()) {
+            throw new RuntimeException("Vacante no encontrada con ID: " + id);
+        }
+
+        return mapearResultadoAVacanteCompleta(results);
+    }
+
+    // Obtener todas las vacantes completas
+    @Transactional(readOnly = true)
+    public List<VacanteResponseDTO> obtenerTodasLasVacantesCompletas() {
+        List<Object[]> results = vacanteRepository.findAllVacantesCompletas();
+        return mapearResultadosAVacantesCompletas(results);
+    }
+
+    // Obtener vacantes completas por empresa
+    @Transactional(readOnly = true)
+    public List<VacanteResponseDTO> obtenerVacantesCompletasPorEmpresa(String empresa) {
+        List<Object[]> results = vacanteRepository.findVacantesCompletasByEmpresa(empresa);
+        return mapearResultadosAVacantesCompletas(results);
+    }
+
+    // Método auxiliar para mapear resultados
+    private VacanteResponseDTO mapearResultadoAVacanteCompleta(List<Object[]> results) {
+        if (results.isEmpty()) return null;
+
+        Object[] firstRow = results.get(0);
+        VacanteResponseDTO dto = new VacanteResponseDTO();
+
+        // Mapear datos básicos de la vacante (primer registro)
+        dto.setId(((Number) firstRow[0]).longValue());
+        dto.setTitulo((String) firstRow[1]);
+        dto.setDescripcion((String) firstRow[2]);
+        dto.setSalario(((Number) firstRow[3]).doubleValue());
+        dto.setUbicacion((String) firstRow[4]);
+        dto.setTipoContrato((String) firstRow[5]);
+        dto.setSolicitudesPermitidas(((Number) firstRow[6]).intValue());
+        dto.setEstado((String) firstRow[7]);
+
+        // Convertir Timestamp a LocalDateTime
+        dto.setFechaCreacion(convertTimestampToLocalDateTime(firstRow[8]));
+        dto.setFechaExpiracion(convertTimestampToLocalDateTime(firstRow[9]));
+
+        dto.setBeneficios((String) firstRow[10]);
+        dto.setEmpresa((String) firstRow[11]);
+
+        // Convertir Time a LocalTime
+        dto.setHoraInicio(convertTimeToLocalTime(firstRow[12]));
+        dto.setHoraFin(convertTimeToLocalTime(firstRow[13]));
+
+        dto.setDiasLaborales((String) firstRow[14]);
+        dto.setHorasPorSemana(firstRow[15] != null ? ((Number) firstRow[15]).intValue() : null);
+        dto.setTurno((String) firstRow[16]);
+        dto.setHorarioFlexible((Boolean) firstRow[17]);
+
+        // Mapear área
+        if (firstRow[18] != null) {
+            dto.setArea(new VacanteResponseDTO.AreaDTO(
+                    ((Number) firstRow[18]).longValue(),
+                    (String) firstRow[19]
+            ));
+        }
+
+        // Mapear modalidad
+        if (firstRow[20] != null) {
+            dto.setModalidad(new VacanteResponseDTO.ModalidadDTO(
+                    ((Number) firstRow[20]).longValue(),
+                    (String) firstRow[21]
+            ));
+        }
+
+        // Mapear habilidades e idiomas (pueden venir en múltiples registros)
+        List<VacanteResponseDTO.HabilidadDTO> habilidades = new ArrayList<>();
+        List<VacanteResponseDTO.IdiomaDTO> idiomas = new ArrayList<>();
+
+        for (Object[] row : results) {
+            // Habilidades
+            if (row[22] != null) {
+                VacanteResponseDTO.HabilidadDTO habilidad = new VacanteResponseDTO.HabilidadDTO(
+                        ((Number) row[22]).longValue(),
+                        (String) row[23],
+                        row[24] != null ? ((Number) row[24]).longValue() : null
+                );
+                // Evitar duplicados
+                if (habilidades.stream().noneMatch(h -> h.getId().equals(habilidad.getId()))) {
+                    habilidades.add(habilidad);
+                }
+            }
+
+            // Idiomas
+            if (row[25] != null) {
+                VacanteResponseDTO.IdiomaDTO idioma = new VacanteResponseDTO.IdiomaDTO(
+                        ((Number) row[25]).longValue(),
+                        (String) row[26]
+                );
+                // Evitar duplicados
+                if (idiomas.stream().noneMatch(i -> i.getId().equals(idioma.getId()))) {
+                    idiomas.add(idioma);
+                }
+            }
+        }
+
+        dto.setHabilidades(habilidades);
+        dto.setIdiomas(idiomas);
+
+        return dto;
+    }
+
+    private List<VacanteResponseDTO> mapearResultadosAVacantesCompletas(List<Object[]> results) {
+        Map<Long, VacanteResponseDTO> vacantesMap = new HashMap<>();
+
+        for (Object[] row : results) {
+            Long vacanteId = ((Number) row[0]).longValue();
+
+            if (!vacantesMap.containsKey(vacanteId)) {
+                VacanteResponseDTO dto = new VacanteResponseDTO();
+
+                // Mapear datos básicos
+                dto.setId(vacanteId);
+                dto.setTitulo((String) row[1]);
+                dto.setDescripcion((String) row[2]);
+                dto.setSalario(((Number) row[3]).doubleValue());
+                dto.setUbicacion((String) row[4]);
+                dto.setTipoContrato((String) row[5]);
+                dto.setSolicitudesPermitidas(((Number) row[6]).intValue());
+                dto.setEstado((String) row[7]);
+
+                // Convertir Timestamp a LocalDateTime
+                dto.setFechaCreacion(convertTimestampToLocalDateTime(row[8]));
+                dto.setFechaExpiracion(convertTimestampToLocalDateTime(row[9]));
+
+                dto.setBeneficios((String) row[10]);
+                dto.setEmpresa((String) row[11]);
+
+                // Convertir Time a LocalTime
+                dto.setHoraInicio(convertTimeToLocalTime(row[12]));
+                dto.setHoraFin(convertTimeToLocalTime(row[13]));
+
+                dto.setDiasLaborales((String) row[14]);
+                dto.setHorasPorSemana(row[15] != null ? ((Number) row[15]).intValue() : null);
+                dto.setTurno((String) row[16]);
+                dto.setHorarioFlexible((Boolean) row[17]);
+
+                // Mapear área
+                if (row[18] != null) {
+                    dto.setArea(new VacanteResponseDTO.AreaDTO(
+                            ((Number) row[18]).longValue(),
+                            (String) row[19]
+                    ));
+                }
+
+                // Mapear modalidad
+                if (row[20] != null) {
+                    dto.setModalidad(new VacanteResponseDTO.ModalidadDTO(
+                            ((Number) row[20]).longValue(),
+                            (String) row[21]
+                    ));
+                }
+
+                dto.setHabilidades(new ArrayList<>());
+                dto.setIdiomas(new ArrayList<>());
+                vacantesMap.put(vacanteId, dto);
+            }
+        }
+
+        return new ArrayList<>(vacantesMap.values());
+    }
+
+    // 🔹 Métodos auxiliares para conversión de tipos
+    private LocalDateTime convertTimestampToLocalDateTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDateTime) {
+            return (LocalDateTime) value;
+        }
+        if (value instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) value).toLocalDateTime();
+        }
+        return null;
+    }
+
+    private LocalTime convertTimeToLocalTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalTime) {
+            return (LocalTime) value;
+        }
+        if (value instanceof java.sql.Time) {
+            return ((java.sql.Time) value).toLocalTime();
+        }
+        return null;
+    }}
