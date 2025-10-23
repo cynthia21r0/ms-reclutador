@@ -87,6 +87,10 @@ public class Vacante {
     private Boolean horarioFlexible = false;
 
     // 🔹 Relaciones
+    @Column(nullable = true, length = 200)
+    @Schema(description = "Id de la empresa", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String empresa_id;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "area_id", nullable = false)
     @JsonIgnore
@@ -119,7 +123,7 @@ public class Vacante {
     @Schema(description = "Conjunto de idiomas requeridos")
     private Set<Idiomas> idiomas = new HashSet<>();
 
-    // 🔹 Getters y Setters (mantener los mismos)
+    // Getters y Setters
     public Long getId() { return id; }
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -163,4 +167,7 @@ public class Vacante {
     public void setHabilidades(Set<Habilidades> habilidades) { this.habilidades = habilidades; }
     public Set<Idiomas> getIdiomas() { return idiomas; }
     public void setIdiomas(Set<Idiomas> idiomas) { this.idiomas = idiomas; }
+    public void setId(Long id) {this.id = id;}
+    public String getEmpresa_id() {return empresa_id;}
+    public void setEmpresa_id(String empresa_id) {this.empresa_id = empresa_id;}
 }
