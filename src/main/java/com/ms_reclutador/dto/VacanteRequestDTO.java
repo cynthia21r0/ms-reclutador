@@ -1,6 +1,8 @@
 package com.ms_reclutador.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
@@ -17,9 +19,6 @@ public class VacanteRequestDTO {
     @Schema(description = "Salario ofrecido", example = "45000.00", requiredMode = Schema.RequiredMode.REQUIRED)
     private Double salario;
 
-    @Schema(description = "Ubicación del trabajo", example = "Ciudad de México", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String ubicacion;
-
     @Schema(description = "Tipo de contrato", example = "Tiempo completo", requiredMode = Schema.RequiredMode.REQUIRED)
     private String tipoContrato;
 
@@ -34,9 +33,6 @@ public class VacanteRequestDTO {
 
     @Schema(description = "Beneficios ofrecidos", example = "Seguro médico, vales de despensa, fondo de ahorro")
     private String beneficios;
-
-    @Schema(description = "Nombre de la empresa", example = "Tech Solutions SA de CV", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String empresa;
 
     @Schema(description = "Hora de inicio de la jornada", example = "09:00:00")
     private LocalTime horaInicio;
@@ -55,6 +51,9 @@ public class VacanteRequestDTO {
 
     @Schema(description = "Indica si el horario es flexible", example = "true")
     private Boolean horarioFlexible;
+
+    @Schema(description = "ID de la empresa", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long empresaId;
 
     @Schema(description = "ID del área", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long areaId;
@@ -75,8 +74,6 @@ public class VacanteRequestDTO {
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public Double getSalario() { return salario; }
     public void setSalario(Double salario) { this.salario = salario; }
-    public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
     public String getTipoContrato() { return tipoContrato; }
     public void setTipoContrato(String tipoContrato) { this.tipoContrato = tipoContrato; }
     public Integer getSolicitudesPermitidas() { return solicitudesPermitidas; }
@@ -87,8 +84,6 @@ public class VacanteRequestDTO {
     public void setFechaExpiracion(LocalDateTime fechaExpiracion) { this.fechaExpiracion = fechaExpiracion; }
     public String getBeneficios() { return beneficios; }
     public void setBeneficios(String beneficios) { this.beneficios = beneficios; }
-    public String getEmpresa() { return empresa; }
-    public void setEmpresa(String empresa) { this.empresa = empresa; }
     public LocalTime getHoraInicio() { return horaInicio; }
     public void setHoraInicio(LocalTime horaInicio) { this.horaInicio = horaInicio; }
     public LocalTime getHoraFin() { return horaFin; }
@@ -109,4 +104,6 @@ public class VacanteRequestDTO {
     public void setHabilidadesIds(Set<Long> habilidadesIds) { this.habilidadesIds = habilidadesIds; }
     public Set<Long> getIdiomasIds() { return idiomasIds; }
     public void setIdiomasIds(Set<Long> idiomasIds) { this.idiomasIds = idiomasIds; }
+    public Long getEmpresaId() { return empresaId; }
+    public void setEmpresaId(Long empresaId) { this.empresaId = empresaId; }
 }

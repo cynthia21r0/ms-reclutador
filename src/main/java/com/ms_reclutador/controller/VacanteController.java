@@ -46,13 +46,11 @@ public class VacanteController {
             vacante.setTitulo(vacanteRequest.getTitulo());
             vacante.setDescripcion(vacanteRequest.getDescripcion());
             vacante.setSalario(vacanteRequest.getSalario());
-            vacante.setUbicacion(vacanteRequest.getUbicacion());
             vacante.setTipoContrato(vacanteRequest.getTipoContrato());
             vacante.setSolicitudesPermitidas(vacanteRequest.getSolicitudesPermitidas());
             vacante.setEstado(vacanteRequest.getEstado());
             vacante.setFechaExpiracion(vacanteRequest.getFechaExpiracion());
             vacante.setBeneficios(vacanteRequest.getBeneficios());
-            vacante.setEmpresa(vacanteRequest.getEmpresa());
             vacante.setHoraInicio(vacanteRequest.getHoraInicio());
             vacante.setHoraFin(vacanteRequest.getHoraFin());
             vacante.setDiasLaborales(vacanteRequest.getDiasLaborales());
@@ -65,7 +63,8 @@ public class VacanteController {
                     vacanteRequest.getAreaId(),
                     vacanteRequest.getModalidadId(),
                     vacanteRequest.getHabilidadesIds(),
-                    vacanteRequest.getIdiomasIds()
+                    vacanteRequest.getIdiomasIds(),
+                    vacanteRequest.getEmpresaId()
             );
 
             Map<String, Object> response = new HashMap<>();
@@ -109,12 +108,12 @@ public class VacanteController {
             @ApiResponse(responseCode = "200", description = "Vacantes obtenidas exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @GetMapping("/empresa/{empresa}")
-    public ResponseEntity<?> obtenerVacantesPorEmpresa(
-            @Parameter(description = "Nombre de la empresa", example = "Tech Solutions SA de CV", required = true)
-            @PathVariable String empresa) {
+    @GetMapping("/empresa/{empresaId}")
+    public ResponseEntity<?> obtenerVacantesPorEmpresaId(
+            @Parameter(description = "ID de la empresa", example = "2", required = true)
+            @PathVariable Long empresaId) {
         try {
-            List<Vacante> vacantes = vacanteService.obtenerVacantesPorEmpresa(empresa);
+            List<Vacante> vacantes = vacanteService.obtenerVacantesPorEmpresaId(empresaId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -156,6 +155,28 @@ public class VacanteController {
         }
     }
 
+    //Endpoint para obtener vacantes completas por empresa ID
+    @GetMapping("/empresa/{empresaId}/completas")
+    public ResponseEntity<?> obtenerVacantesCompletasPorEmpresaId(
+            @Parameter(description = "ID de la empresa", example = "2", required = true)
+            @PathVariable Long empresaId) {
+        try {
+            List<VacanteResponseDTO> vacantes = vacanteService.obtenerVacantesCompletasPorEmpresaId(empresaId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", vacantes);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Error al obtener vacantes: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     @Operation(summary = "Actualizar vacante", description = "Actualiza la información de una vacante existente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Vacante actualizada exitosamente"),
@@ -173,7 +194,6 @@ public class VacanteController {
             vacante.setTitulo(vacanteRequest.getTitulo());
             vacante.setDescripcion(vacanteRequest.getDescripcion());
             vacante.setSalario(vacanteRequest.getSalario());
-            vacante.setUbicacion(vacanteRequest.getUbicacion());
             vacante.setTipoContrato(vacanteRequest.getTipoContrato());
             vacante.setSolicitudesPermitidas(vacanteRequest.getSolicitudesPermitidas());
             vacante.setBeneficios(vacanteRequest.getBeneficios());

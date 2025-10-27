@@ -32,8 +32,12 @@ public class VacanteService {
     private ModalidadRepository modalidadRepository;
 
     // Crear vacante
+    // Crear vacante - AGREGAR empresaId
     public Vacante crearVacante(Vacante vacante, Long areaId, Long modalidadId,
-                                Set<Long> habilidadesIds, Set<Long> idiomasIds) {
+                                Set<Long> habilidadesIds, Set<Long> idiomasIds, Long empresaId) {
+
+        // Establecer empresaId
+        vacante.setEmpresaId(empresaId);
 
         // Validar y establecer área
         Area area = areaRepository.findById(areaId)
@@ -92,14 +96,14 @@ public class VacanteService {
 
     // Obtener vacantes por empresa
     @Transactional(readOnly = true)
-    public List<Vacante> obtenerVacantesPorEmpresa(String empresa) {
-        return vacanteRepository.findByEmpresa(empresa);
+    public List<Vacante> obtenerVacantesPorEmpresaId(Long empresaId) {
+        return vacanteRepository.findByEmpresaId(empresaId);
     }
 
     // Obtener vacante por ID y empresa (para validación de propiedad)
     @Transactional(readOnly = true)
-    public Vacante obtenerVacantePorIdYEmpresa(Long id, String empresa) {
-        return vacanteRepository.findByIdAndEmpresa(id, empresa)
+    public Vacante obtenerVacantePorIdYEmpresaId(Long id, Long empresaId) {
+        return vacanteRepository.findByIdAndEmpresaId(id, empresaId)
                 .orElseThrow(() -> new RuntimeException("Vacante no encontrada o no pertenece a la empresa"));
     }
 
@@ -114,7 +118,6 @@ public class VacanteService {
         vacanteExistente.setTitulo(vacanteActualizada.getTitulo());
         vacanteExistente.setDescripcion(vacanteActualizada.getDescripcion());
         vacanteExistente.setSalario(vacanteActualizada.getSalario());
-        vacanteExistente.setUbicacion(vacanteActualizada.getUbicacion());
         vacanteExistente.setTipoContrato(vacanteActualizada.getTipoContrato());
         vacanteExistente.setSolicitudesPermitidas(vacanteActualizada.getSolicitudesPermitidas());
         vacanteExistente.setBeneficios(vacanteActualizada.getBeneficios());
@@ -199,12 +202,12 @@ public class VacanteService {
 
     // Obtener vacantes completas por empresa
     @Transactional(readOnly = true)
-    public List<VacanteResponseDTO> obtenerVacantesCompletasPorEmpresa(String empresa) {
-        List<Object[]> results = vacanteRepository.findVacantesCompletasByEmpresa(empresa);
+    public List<VacanteResponseDTO> obtenerVacantesCompletasPorEmpresaId(Long empresaId) {
+        List<Object[]> results = vacanteRepository.findVacantesCompletasByEmpresaId(empresaId);
         return mapearResultadosAVacantesCompletas(results);
     }
 
-    // Método auxiliar para mapear resultados
+    // Metodo auxiliar para mapear resultados
     private VacanteResponseDTO mapearResultadoAVacanteCompleta(List<Object[]> results) {
         if (results.isEmpty()) return null;
 
@@ -216,40 +219,39 @@ public class VacanteService {
         dto.setTitulo((String) firstRow[1]);
         dto.setDescripcion((String) firstRow[2]);
         dto.setSalario(((Number) firstRow[3]).doubleValue());
-        dto.setUbicacion((String) firstRow[4]);
-        dto.setTipoContrato((String) firstRow[5]);
-        dto.setSolicitudesPermitidas(((Number) firstRow[6]).intValue());
-        dto.setEstado((String) firstRow[7]);
+        dto.setTipoContrato((String) firstRow[4]);
+        dto.setSolicitudesPermitidas(((Number) firstRow[5]).intValue());
+        dto.setEstado((String) firstRow[6]);
 
         // Convertir Timestamp a LocalDateTime
-        dto.setFechaCreacion(convertTimestampToLocalDateTime(firstRow[8]));
-        dto.setFechaExpiracion(convertTimestampToLocalDateTime(firstRow[9]));
+        dto.setFechaCreacion(convertTimestampToLocalDateTime(firstRow[7]));
+        dto.setFechaExpiracion(convertTimestampToLocalDateTime(firstRow[8]));
 
-        dto.setBeneficios((String) firstRow[10]);
-        dto.setEmpresa((String) firstRow[11]);
+        dto.setBeneficios((String) firstRow[9]);
+        dto.setEmpresaId((Long)firstRow[10]);
 
         // Convertir Time a LocalTime
-        dto.setHoraInicio(convertTimeToLocalTime(firstRow[12]));
-        dto.setHoraFin(convertTimeToLocalTime(firstRow[13]));
+        dto.setHoraInicio(convertTimeToLocalTime(firstRow[11]));
+        dto.setHoraFin(convertTimeToLocalTime(firstRow[12]));
 
-        dto.setDiasLaborales((String) firstRow[14]);
-        dto.setHorasPorSemana(firstRow[15] != null ? ((Number) firstRow[15]).intValue() : null);
-        dto.setTurno((String) firstRow[16]);
-        dto.setHorarioFlexible((Boolean) firstRow[17]);
+        dto.setDiasLaborales((String) firstRow[13]);
+        dto.setHorasPorSemana(firstRow[14] != null ? ((Number) firstRow[14]).intValue() : null);
+        dto.setTurno((String) firstRow[15]);
+        dto.setHorarioFlexible((Boolean) firstRow[16]);
 
         // Mapear área
-        if (firstRow[18] != null) {
+        if (firstRow[17] != null) {
             dto.setArea(new VacanteResponseDTO.AreaDTO(
-                    ((Number) firstRow[18]).longValue(),
-                    (String) firstRow[19]
+                    ((Number) firstRow[17]).longValue(),
+                    (String) firstRow[18]
             ));
         }
 
         // Mapear modalidad
-        if (firstRow[20] != null) {
+        if (firstRow[19] != null) {
             dto.setModalidad(new VacanteResponseDTO.ModalidadDTO(
-                    ((Number) firstRow[20]).longValue(),
-                    (String) firstRow[21]
+                    ((Number) firstRow[19]).longValue(),
+                    (String) firstRow[20]
             ));
         }
 
@@ -259,11 +261,11 @@ public class VacanteService {
 
         for (Object[] row : results) {
             // Habilidades
-            if (row[22] != null) {
+            if (row[21] != null) {
                 VacanteResponseDTO.HabilidadDTO habilidad = new VacanteResponseDTO.HabilidadDTO(
-                        ((Number) row[22]).longValue(),
-                        (String) row[23],
-                        row[24] != null ? ((Number) row[24]).longValue() : null
+                        ((Number) row[21]).longValue(),
+                        (String) row[22],
+                        row[23] != null ? ((Number) row[23]).longValue() : null
                 );
                 // Evitar duplicados
                 if (habilidades.stream().noneMatch(h -> h.getId().equals(habilidad.getId()))) {
@@ -272,10 +274,10 @@ public class VacanteService {
             }
 
             // Idiomas
-            if (row[25] != null) {
+            if (row[24] != null) {
                 VacanteResponseDTO.IdiomaDTO idioma = new VacanteResponseDTO.IdiomaDTO(
-                        ((Number) row[25]).longValue(),
-                        (String) row[26]
+                        ((Number) row[24]).longValue(),
+                        (String) row[25]
                 );
                 // Evitar duplicados
                 if (idiomas.stream().noneMatch(i -> i.getId().equals(idioma.getId()))) {
@@ -304,40 +306,39 @@ public class VacanteService {
                 dto.setTitulo((String) row[1]);
                 dto.setDescripcion((String) row[2]);
                 dto.setSalario(((Number) row[3]).doubleValue());
-                dto.setUbicacion((String) row[4]);
-                dto.setTipoContrato((String) row[5]);
-                dto.setSolicitudesPermitidas(((Number) row[6]).intValue());
-                dto.setEstado((String) row[7]);
+                dto.setTipoContrato((String) row[4]);
+                dto.setSolicitudesPermitidas(((Number) row[5]).intValue());
+                dto.setEstado((String) row[6]);
 
                 // Convertir Timestamp a LocalDateTime
-                dto.setFechaCreacion(convertTimestampToLocalDateTime(row[8]));
-                dto.setFechaExpiracion(convertTimestampToLocalDateTime(row[9]));
+                dto.setFechaCreacion(convertTimestampToLocalDateTime(row[7]));
+                dto.setFechaExpiracion(convertTimestampToLocalDateTime(row[8]));
 
-                dto.setBeneficios((String) row[10]);
-                dto.setEmpresa((String) row[11]);
+                dto.setBeneficios((String) row[9]);
+                dto.setEmpresaId((Long) row[10]);
 
                 // Convertir Time a LocalTime
-                dto.setHoraInicio(convertTimeToLocalTime(row[12]));
-                dto.setHoraFin(convertTimeToLocalTime(row[13]));
+                dto.setHoraInicio(convertTimeToLocalTime(row[11]));
+                dto.setHoraFin(convertTimeToLocalTime(row[12]));
 
-                dto.setDiasLaborales((String) row[14]);
-                dto.setHorasPorSemana(row[15] != null ? ((Number) row[15]).intValue() : null);
-                dto.setTurno((String) row[16]);
-                dto.setHorarioFlexible((Boolean) row[17]);
+                dto.setDiasLaborales((String) row[13]);
+                dto.setHorasPorSemana(row[14] != null ? ((Number) row[14]).intValue() : null);
+                dto.setTurno((String) row[15]);
+                dto.setHorarioFlexible((Boolean) row[16]);
 
                 // Mapear área
-                if (row[18] != null) {
+                if (row[17] != null) {
                     dto.setArea(new VacanteResponseDTO.AreaDTO(
-                            ((Number) row[18]).longValue(),
-                            (String) row[19]
+                            ((Number) row[17]).longValue(),
+                            (String) row[18]
                     ));
                 }
 
                 // Mapear modalidad
-                if (row[20] != null) {
+                if (row[19] != null) {
                     dto.setModalidad(new VacanteResponseDTO.ModalidadDTO(
-                            ((Number) row[20]).longValue(),
-                            (String) row[21]
+                            ((Number) row[19]).longValue(),
+                            (String) row[20]
                     ));
                 }
 

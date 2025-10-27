@@ -31,10 +31,6 @@ public class Vacante {
     private Double salario;
 
     @Column(nullable = false)
-    @Schema(description = "Ubicación del trabajo", example = "Ciudad de México", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String ubicacion;
-
-    @Column(nullable = false)
     @Schema(description = "Tipo de contrato", example = "Tiempo completo", requiredMode = Schema.RequiredMode.REQUIRED)
     private String tipoContrato;
 
@@ -57,10 +53,6 @@ public class Vacante {
     @Column(length = 1000)
     @Schema(description = "Beneficios ofrecidos", example = "Seguro médico, vales de despensa, fondo de ahorro")
     private String beneficios;
-
-    @Column(nullable = false, length = 200)
-    @Schema(description = "Nombre de la empresa", example = "Tech Solutions SA de CV", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String empresa;
 
     @Column
     @Schema(description = "Hora de inicio de la jornada", example = "09:00:00")
@@ -87,9 +79,9 @@ public class Vacante {
     private Boolean horarioFlexible = false;
 
     // 🔹 Relaciones
-    @Column(nullable = true, length = 200)
-    @Schema(description = "Id de la empresa", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String empresa_id;
+    @Column(name = "empresa_id") // 🔹 Esto debe coincidir EXACTAMENTE con el nombre en la BD
+    @Schema(description = "ID de la empresa", example = "2")
+    private Long empresaId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "area_id", nullable = false)
@@ -131,8 +123,6 @@ public class Vacante {
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public Double getSalario() { return salario; }
     public void setSalario(Double salario) { this.salario = salario; }
-    public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
     public String getTipoContrato() { return tipoContrato; }
     public void setTipoContrato(String tipoContrato) { this.tipoContrato = tipoContrato; }
     public Integer getSolicitudesPermitidas() { return solicitudesPermitidas; }
@@ -145,8 +135,6 @@ public class Vacante {
     public void setFechaExpiracion(LocalDateTime fechaExpiracion) { this.fechaExpiracion = fechaExpiracion; }
     public String getBeneficios() { return beneficios; }
     public void setBeneficios(String beneficios) { this.beneficios = beneficios; }
-    public String getEmpresa() { return empresa; }
-    public void setEmpresa(String empresa) { this.empresa = empresa; }
     public LocalTime getHoraInicio() { return horaInicio; }
     public void setHoraInicio(LocalTime horaInicio) { this.horaInicio = horaInicio; }
     public LocalTime getHoraFin() { return horaFin; }
@@ -168,6 +156,6 @@ public class Vacante {
     public Set<Idiomas> getIdiomas() { return idiomas; }
     public void setIdiomas(Set<Idiomas> idiomas) { this.idiomas = idiomas; }
     public void setId(Long id) {this.id = id;}
-    public String getEmpresa_id() {return empresa_id;}
-    public void setEmpresa_id(String empresa_id) {this.empresa_id = empresa_id;}
+    public Long getEmpresaId() {return empresaId;}
+    public void setEmpresaId(Long empresa_id) {this.empresaId = empresa_id;}
 }
